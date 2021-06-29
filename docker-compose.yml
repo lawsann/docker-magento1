@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  
+  httpserver:
+    build: docker-images/nginx/.
+    ports:
+      - "80:80"
+    volumes: &sharedvolumes
+      - ./src:/var/www/magento
+    depends_on:
+      - phpapp
+
+  phpapp:
+    build: docker-images/php-fpm/.
+    volumes: *sharedvolumes
+    depends_on:
+      - db
+      - mail
+
+  db:
+    image: mariadb:10.2
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    env_file: docker-images/mariadb/var.env
+  
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  appdata:
+  dbdata:
